@@ -270,7 +270,7 @@ router.get('/status/:status', async (req, res) => {
 })
 
 import QRCode from 'qrcode'
-import { buildClockQrPayload } from '../utils/clockQR.js'
+import { buildClockQrPayload } from '../utils/clockQr.js'
 
 // Generates a temporary clock-in QR for an event
 router.post('/:id/generate-clock-in-qr', async (req, res) => {

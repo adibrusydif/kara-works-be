@@ -1,4 +1,4 @@
-// src/utils/clockQR.ts
+// src/utils/clockQr.ts
 export interface ClockQrPayload {
     event_id: string
     creator_id: string
