@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Users & Events Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+    .tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    .tab:hover {
+      color: #007bff;
+    }
+    .tab.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .sub-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .sub-tab {
+      padding: 8px 16px;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #666;
+      transition: all 0.3s;
+    }
+    .sub-tab:hover {
+      background: #e9ecef;
+    }
+    .sub-tab.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .card-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .card-info {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .card-info strong {
+      color: #333;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .badge-hotel {
+      background: #d4edda;
+      color: #155724;
+    }
+    .badge-worker {
+      background: #cfe2ff;
+      color: #084298;
+    }
+    .badge-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .badge-approved {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+    .badge-rejected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .refresh-btn {
+      background: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .refresh-btn:hover {
+      background: #0056b3;
+    }
+    .card-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      background: #f0f0f0;
+    }
+    .card-image-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 14px;
+    }
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 15px;
+      display: block;
+      border: 3px solid #007bff;
+    }
+    .user-avatar-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #e9ecef;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 12px;
+      border: 3px solid #007bff;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Users & Events Dashboard</h1>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('users')">👥 Users</button>
+      <button class="tab" onclick="showTab('events')">📅 Events</button>
+      <button class="tab" onclick="showTab('applications')">📝 Applications</button>
+    </div>
+    
+    <!-- Users Tab -->
+    <div id="users-tab" class="tab-content active">
+      <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
+      <div id="users-error" class="error" style="display: none;"></div>
+      <div id="users-loading" class="loading">Loading users...</div>
+      <div id="users-grid" class="grid" style="display: none;"></div>
+    </div>
+    
+    <!-- Events Tab -->
+    <div id="events-tab" class="tab-content">
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">Generate Clock-In / Clock-Out QR</div>
+            <div class="card-info">
+              <label for="qr-event-id">Event ID</label>
+              <input id="qr-event-id" type="text" placeholder="Enter event UUID">
+            </div>
+            <div class="card-info">
+              <button class="refresh-btn" onclick="generateQr('clock-in')">Generate Clock-In QR</button>
+              <button class="refresh-btn" onclick="generateQr('clock-out')" style="margin-left: 10px;">Generate Clock-Out QR</button>
+            </div>
+            <div id="qr-error" class="error" style="display: none; margin-top: 10px;"></div>
+            <div id="qr-result" style="display: none; margin-top: 20px; text-align: center;">
+              <p id="qr-type" style="font-weight: bold;"></p>
+              <img id="qr-image" src="" alt="QR Code" style="max-width: 240px; border: 1px solid #ddd; padding: 8px; border-radius: 8px;">
+              <pre id="qr-payload" style="text-align: left; margin-top: 12px; background: #f8f9fa; padding: 12px; border-radius: 6px;"></pre>
+            </div>
+          </div>
+      <button class="refresh-btn" onclick="loadEvents()">🔄 Refresh</button>
+      <div id="events-error" class="error" style="display: none;"></div>
+      <div id="events-loading" class="loading">Loading events...</div>
+      <div id="events-grid" class="grid" style="display: none;"></div>
+    </div>
+    
+    <!-- Applications Tab -->
+    <div id="applications-tab" class="tab-content">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="showApplicationType('all')">All Applications</button>
+        <button class="sub-tab" onclick="showApplicationType('by-user')">By User</button>
+        <button class="sub-tab" onclick="showApplicationType('by-event')">By Event</button>
+      </div>
+      
+      <!-- All Applications -->
+      <div id="applications-all" class="application-view">
+        <button class="refresh-btn" onclick="loadApplications()">🔄 Refresh</button>
+        <div id="applications-error" class="error" style="display: none;"></div>
+        <div id="applications-loading" class="loading">Loading applications...</div>
+        <div id="applications-grid" class="grid" style="display: none;"></div>
+      </div>
+      
+      <!-- Applications By User -->
+      <div id="applications-by-user" class="application-view" style="display: none;">
+        <div class="input-group">
+          <label for="user-id-input">User ID:</label>
+          <input type="text" id="user-id-input" placeholder="Enter user ID">
+        </div>
+        <button class="refresh-btn" onclick="loadApplicationsByUser()">🔄 Load Applications</button>
+        <div id="applications-by-user-error" class="error" style="display: none;"></div>
+        <div id="applications-by-user-loading" class="loading" style="display: none;">Loading applications...</div>
+        <div id="applications-by-user-grid" class="grid" style="display: none;"></div>
+      </div>
+      
+      <!-- Applications By Event -->
+      <div id="applications-by-event" class="application-view" style="display: none;">
+        <div class="input-group">
+          <label for="event-id-input">Event ID:</label>
+          <input type="text" id="event-id-input" placeholder="Enter event ID">
+        </div>
+        <button class="refresh-btn" onclick="loadApplicationsByEvent()">🔄 Load Applications</button>
+        <div id="applications-by-event-error" class="error" style="display: none;"></div>
+        <div id="applications-by-event-loading" class="loading" style="display: none;">Loading applications...</div>
+        <div id="applications-by-event-grid" class="grid" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load data for the selected tab
+      if (tabName === 'users') {
+        loadUsers();
+      } else if (tabName === 'events') {
+        loadEvents();
+      } else if (tabName === 'applications') {
+        showApplicationType('all');
+        loadApplications();
+      }
+    }
+
+    function showApplicationType(type) {
+      // Hide all application views
+      document.querySelectorAll('.application-view').forEach(view => {
+        view.style.display = 'none';
+      });
+      document.querySelectorAll('.sub-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected view
+      document.getElementById('applications-' + type).style.display = 'block';
+      event.target.classList.add('active');
+      
+      // Load data
+      if (type === 'all') {
+        loadApplications();
+      }
+    }
+
+    async function loadUsers() {
+      const loadingEl = document.getElementById('users-loading');
+      const errorEl = document.getElementById('users-error');
+      const gridEl = document.getElementById('users-grid');
+      
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      gridEl.style.display = 'none';
+      
+      try {
+        const response = await fetch('/api/users');
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load users');
+        }
+        
+        loadingEl.style.display = 'none';
+        
+        if (!result.data || result.data.length === 0) {
+          gridEl.innerHTML = '<p style="text-align: center; color: #666;">No users found</p>';
+          gridEl.style.display = 'block';
+          return;
+        }
+        
+        gridEl.innerHTML = result.data.map(user => `
+          <div class="card">
+            ${user.user_photo 
+              ? `<img src="${user.user_photo}" alt="${user.user_name}" class="user-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                 <div class="user-avatar-placeholder" style="display: none;">No Photo</div>`
+              : `<div class="user-avatar-placeholder">No Photo</div>`
+            }
+            <div class="card-header">${user.user_name || 'N/A'}</div>
+            <div class="card-info"><strong>Phone:</strong> ${user.user_phone || 'N/A'}</div>
+            <div class="card-info"><strong>Role:</strong> ${user.user_role || 'N/A'}</div>
+            ${user.wallet_balance !== undefined ? `<div class="card-info"><strong>Balance:</strong> Rp ${user.wallet_balance?.toLocaleString('id-ID') || '0'}</div>` : ''}
+            ${user.hotel ? `<div class="card-info"><strong>Hotel:</strong> ${user.hotel.hotel_name || 'N/A'}</div>` : ''}
+            ${user.bank ? `<div class="card-info"><strong>Bank:</strong> ${user.bank.bank_name || 'N/A'}</div>` : ''}
+            <span class="badge ${user.user_role === 'hotel' ? 'badge-hotel' : 'badge-worker'}">${user.user_role || 'N/A'}</span>
+          </div>
+        `).join('');
+        
+        gridEl.style.display = 'grid';
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function loadEvents() {
+      const loadingEl = document.getElementById('events-loading');
+      const errorEl = document.getElementById('events-error');
+      const gridEl = document.getElementById('events-grid');
+      
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      gridEl.style.display = 'none';
+      
+      try {
+        const response = await fetch('/api/events');
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load events');
+        }
+        
+        loadingEl.style.display = 'none';
+        
+        if (!result.data || result.data.length === 0) {
+          gridEl.innerHTML = '<p style="text-align: center; color: #666;">No events found</p>';
+          gridEl.style.display = 'block';
+          return;
+        }
+        
+        gridEl.innerHTML = result.data.map(event => {
+          const eventDate = new Date(event.event_date);
+          const formattedDate = eventDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div class="card">
+              ${event.event_photo 
+                ? `<img src="${event.event_photo}" alt="${event.event_name}" class="card-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="card-image-placeholder" style="display: none;">No Photo</div>`
+                : `<div class="card-image-placeholder">No Photo</div>`
+              }
+              <div class="card-header">${event.event_name || 'N/A'}</div>
+              <div class="card-info"><strong>Event ID:</strong> ${event.event_id || 'N/A'}</div>
+              <div class="card-info"><strong>Date:</strong> ${formattedDate}</div>
+              <div class="card-info"><strong>Salary:</strong> Rp ${event.event_salary?.toLocaleString('id-ID') || '0'}</div>
+              <div class="card-info"><strong>Person Count:</strong> ${event.event_person_count || '0'}</div>
+              ${event.event_creator ? `<div class="card-info"><strong>Creator:</strong> ${event.event_creator.user_name || 'N/A'}</div>` : ''}
+              ${event.event_creator?.hotel ? `<div class="card-info"><strong>Hotel:</strong> ${event.event_creator.hotel.hotel_name || 'N/A'}</div>` : ''}
+              ${event.event_description ? `<div class="card-info" style="margin-top: 10px; font-size: 12px; color: #888;">${event.event_description.substring(0, 100)}${event.event_description.length > 100 ? '...' : ''}</div>` : ''}
+              <span class="badge ${event.event_status === 'approved' ? 'badge-approved' : 'badge-pending'}">${event.event_status || 'pending'}</span>
+            </div>
+          `;
+        }).join('');
+        
+        gridEl.style.display = 'grid';
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function loadApplications() {
+      const loadingEl = document.getElementById('applications-loading');
+      const errorEl = document.getElementById('applications-error');
+      const gridEl = document.getElementById('applications-grid');
+      
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      gridEl.style.display = 'none';
+      
+      try {
+        const response = await fetch('/api/applications');
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load applications');
+        }
+        
+        loadingEl.style.display = 'none';
+        
+        if (!result.data || result.data.length === 0) {
+          gridEl.innerHTML = '<p style="text-align: center; color: #666;">No applications found</p>';
+          gridEl.style.display = 'block';
+          return;
+        }
+        
+        gridEl.innerHTML = result.data.map(application => {
+          const createdAt = new Date(application.created_at);
+          const formattedDate = createdAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div class="card">
+              <div class="card-header">Application #${application.application_id.substring(0, 8)}</div>
+              ${application.event ? `<div class="card-info"><strong>Event:</strong> ${application.event.event_name || 'N/A'}</div>` : ''}
+              ${application.user ? `<div class="card-info"><strong>User:</strong> ${application.user.user_name || 'N/A'}</div>` : ''}
+              <div class="card-info"><strong>Applied:</strong> ${formattedDate}</div>
+              ${application.clock_in_prove ? `<div class="card-info"><strong>Clock In Proof:</strong> <a href="${application.clock_in_prove}" target="_blank">View</a></div>` : ''}
+              ${application.clock_out_prove ? `<div class="card-info"><strong>Clock Out Proof:</strong> <a href="${application.clock_out_prove}" target="_blank">View</a></div>` : ''}
+              <span class="badge ${application.application_status === 'approved' ? 'badge-approved' : application.application_status === 'rejected' ? 'badge-rejected' : 'badge-pending'}">${application.application_status || 'pending'}</span>
+            </div>
+          `;
+        }).join('');
+        
+        gridEl.style.display = 'grid';
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function loadApplicationsByUser() {
+      const userId = document.getElementById('user-id-input').value.trim();
+      const loadingEl = document.getElementById('applications-by-user-loading');
+      const errorEl = document.getElementById('applications-by-user-error');
+      const gridEl = document.getElementById('applications-by-user-grid');
+      
+      if (!userId) {
+        errorEl.textContent = 'Please enter a User ID';
+        errorEl.style.display = 'block';
+        return;
+      }
+      
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      gridEl.style.display = 'none';
+      
+      try {
+        const response = await fetch(`/api/applications/user/${userId}`);
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load applications');
+        }
+        
+        loadingEl.style.display = 'none';
+        
+        if (!result.data || result.data.length === 0) {
+          gridEl.innerHTML = '<p style="text-align: center; color: #666;">No applications found for this user</p>';
+          gridEl.style.display = 'block';
+          return;
+        }
+        
+        gridEl.innerHTML = result.data.map(application => {
+          const createdAt = new Date(application.created_at);
+          const formattedDate = createdAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div class="card">
+              <div class="card-header">${application.event?.event_name || 'Event N/A'}</div>
+              ${application.event ? `<div class="card-info"><strong>Event Date:</strong> ${new Date(application.event.event_date).toLocaleDateString()}</div>` : ''}
+              ${application.event ? `<div class="card-info"><strong>Salary:</strong> Rp ${application.event.event_salary?.toLocaleString('id-ID') || '0'}</div>` : ''}
+              <div class="card-info"><strong>Applied:</strong> ${formattedDate}</div>
+              ${application.clock_in_prove ? `<div class="card-info"><strong>Clock In Proof:</strong> <a href="${application.clock_in_prove}" target="_blank">View</a></div>` : ''}
+              ${application.clock_out_prove ? `<div class="card-info"><strong>Clock Out Proof:</strong> <a href="${application.clock_out_prove}" target="_blank">View</a></div>` : ''}
+              <span class="badge ${application.application_status === 'approved' ? 'badge-approved' : application.application_status === 'rejected' ? 'badge-rejected' : 'badge-pending'}">${application.application_status || 'pending'}</span>
+            </div>
+          `;
+        }).join('');
+        
+        gridEl.style.display = 'grid';
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function loadApplicationsByEvent() {
+      const eventId = document.getElementById('event-id-input').value.trim();
+      const loadingEl = document.getElementById('applications-by-event-loading');
+      const errorEl = document.getElementById('applications-by-event-error');
+      const gridEl = document.getElementById('applications-by-event-grid');
+      
+      if (!eventId) {
+        errorEl.textContent = 'Please enter an Event ID';
+        errorEl.style.display = 'block';
+        return;
+      }
+      
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      gridEl.style.display = 'none';
+      
+      try {
+        const response = await fetch(`/api/applications/event/${eventId}`);
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load applications');
+        }
+        
+        loadingEl.style.display = 'none';
+        
+        if (!result.data || result.data.length === 0) {
+          gridEl.innerHTML = '<p style="text-align: center; color: #666;">No applications found for this event</p>';
+          gridEl.style.display = 'block';
+          return;
+        }
+        
+        gridEl.innerHTML = result.data.map(application => {
+          const createdAt = new Date(application.created_at);
+          const formattedDate = createdAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div class="card">
+              ${application.user?.user_photo 
+                ? `<img src="${application.user.user_photo}" alt="${application.user.user_name}" class="user-avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div class="user-avatar-placeholder" style="display: none;">No Photo</div>`
+                : `<div class="user-avatar-placeholder">No Photo</div>`
+              }
+              <div class="card-header">${application.user?.user_name || 'User N/A'}</div>
+              <div class="card-info"><strong>Phone:</strong> ${application.user?.user_phone || 'N/A'}</div>
+              <div class="card-info"><strong>Applied:</strong> ${formattedDate}</div>
+              ${application.clock_in_prove ? `<div class="card-info"><strong>Clock In Proof:</strong> <a href="${application.clock_in_prove}" target="_blank">View</a></div>` : ''}
+              ${application.clock_out_prove ? `<div class="card-info"><strong>Clock Out Proof:</strong> <a href="${application.clock_out_prove}" target="_blank">View</a></div>` : ''}
+              <span class="badge ${application.application_status === 'approved' ? 'badge-approved' : application.application_status === 'rejected' ? 'badge-rejected' : 'badge-pending'}">${application.application_status || 'pending'}</span>
+            </div>
+          `;
+        }).join('');
+        
+        gridEl.style.display = 'grid';
+      } catch (error) {
+        loadingEl.style.display = 'none';
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function generateQr(type) {
+  const eventId = document.getElementById('qr-event-id').value.trim()
+  const errorEl = document.getElementById('qr-error')
+  const resultEl = document.getElementById('qr-result')
+  const imageEl = document.getElementById('qr-image')
+  const payloadEl = document.getElementById('qr-payload')
+  const typeLabel = document.getElementById('qr-type')
+
+  if (!eventId) {
+    errorEl.textContent = 'Please enter an event ID'
+    errorEl.style.display = 'block'
+    resultEl.style.display = 'none'
+    return
+  }
+
+  try {
+    errorEl.style.display = 'none'
+    resultEl.style.display = 'none'
+
+    const endpoint =
+      type === 'clock-in'
+        ? `/api/events/${eventId}/generate-clock-in-qr`
+        : `/api/events/${eventId}/generate-clock-out-qr`
+
+    const response = await fetch(endpoint, { method: 'POST' })
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to generate QR code')
+    }
+
+    typeLabel.textContent = type === 'clock-in' ? 'Clock-In QR' : 'Clock-Out QR'
+    imageEl.src = data.qr
+    payloadEl.textContent = JSON.stringify(data.payload, null, 2)
+
+    resultEl.style.display = 'block'
+  } catch (error) {
+    errorEl.textContent = `Error: ${error.message}`
+    errorEl.style.display = 'block'
+    resultEl.style.display = 'none'
+  }
+}
+
+    // Load users on page load
+    loadUsers();
+  </script>
+</body>
+</html>

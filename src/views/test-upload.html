@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test File Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+    .tab {
+      padding: 12px 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    .tab:hover {
+      color: #007bff;
+    }
+    .tab.active {
+      color: #007bff;
+      border-bottom-color: #007bff;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="text"],
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Test File Upload</h1>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('hotel')">🏨 Hotel Logo</button>
+      <button class="tab" onclick="showTab('user')">👤 User Photo</button>
+      <button class="tab" onclick="showTab('event')">📅 Event Photo</button>
+    </div>
+    
+    <!-- Hotel Logo Upload -->
+    <div id="hotel-tab" class="tab-content active">
+      <form id="hotelForm">
+        <div class="form-group">
+          <label for="hotelId">Hotel ID:</label>
+          <input type="text" id="hotelId" placeholder="e.g., 11d55faf-b8de-48eb-a865-7ec552fcc876" required>
+        </div>
+        <div class="form-group">
+          <label for="hotelLogoFile">Logo File:</label>
+          <input type="file" id="hotelLogoFile" accept="image/*" required>
+        </div>
+        <button type="submit">📤 Upload Hotel Logo</button>
+      </form>
+    </div>
+    
+    <!-- User Photo Upload -->
+    <div id="user-tab" class="tab-content">
+      <form id="userForm">
+        <div class="form-group">
+          <label for="userId">User ID:</label>
+          <input type="text" id="userId" placeholder="e.g., user-uuid-here" required>
+        </div>
+        <div class="form-group">
+          <label for="userPhotoFile">Photo File:</label>
+          <input type="file" id="userPhotoFile" accept="image/*" required>
+        </div>
+        <button type="submit">📤 Upload User Photo</button>
+      </form>
+    </div>
+    
+    <!-- Event Photo Upload -->
+    <div id="event-tab" class="tab-content">
+      <form id="eventForm">
+        <div class="form-group">
+          <label for="eventId">Event ID:</label>
+          <input type="text" id="eventId" placeholder="e.g., event-uuid-here" required>
+        </div>
+        <div class="form-group">
+          <label for="eventPhotoFile">Photo File:</label>
+          <input type="file" id="eventPhotoFile" accept="image/*" required>
+        </div>
+        <button type="submit">📤 Upload Event Photo</button>
+      </form>
+    </div>
+    
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected tab
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Hotel Logo Upload
+    document.getElementById('hotelForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const hotelId = document.getElementById('hotelId').value.trim();
+      const file = document.getElementById('hotelLogoFile').files[0];
+      const resultDiv = document.getElementById('result');
+      
+      if (!hotelId || !file) {
+        resultDiv.className = 'error';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<strong>Error:</strong> Please fill all fields';
+        return;
+      }
+      
+      resultDiv.className = '';
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<strong>Uploading...</strong> Please wait...';
+      
+      const formData = new FormData();
+      formData.append('logo', file);
+      
+      try {
+        const response = await fetch(`/api/upload/hotels/${hotelId}/logo`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          resultDiv.className = 'success';
+          resultDiv.innerHTML = `
+            <strong>✅ Upload Successful!</strong>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+            <p><strong>Logo URL:</strong> <a href="${result.logoUrl}" target="_blank">${result.logoUrl}</a></p>
+          `;
+        } else {
+          resultDiv.className = 'error';
+          resultDiv.innerHTML = `
+            <strong>❌ Upload Failed</strong>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+      }
+    });
+
+    // User Photo Upload
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('userId').value.trim();
+      const file = document.getElementById('userPhotoFile').files[0];
+      const resultDiv = document.getElementById('result');
+      
+      if (!userId || !file) {
+        resultDiv.className = 'error';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<strong>Error:</strong> Please fill all fields';
+        return;
+      }
+      
+      resultDiv.className = '';
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<strong>Uploading...</strong> Please wait...';
+      
+      const formData = new FormData();
+      formData.append('photo', file);
+      
+      try {
+        const response = await fetch(`/api/upload/users/${userId}/photo`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          resultDiv.className = 'success';
+          resultDiv.innerHTML = `
+            <strong>✅ Upload Successful!</strong>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+            <p><strong>Photo URL:</strong> <a href="${result.photoUrl}" target="_blank">${result.photoUrl}</a></p>
+          `;
+        } else {
+          resultDiv.className = 'error';
+          resultDiv.innerHTML = `
+            <strong>❌ Upload Failed</strong>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+      }
+    });
+
+    // Event Photo Upload
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const eventId = document.getElementById('eventId').value.trim();
+      const file = document.getElementById('eventPhotoFile').files[0];
+      const resultDiv = document.getElementById('result');
+      
+      if (!eventId || !file) {
+        resultDiv.className = 'error';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<strong>Error:</strong> Please fill all fields';
+        return;
+      }
+      
+      resultDiv.className = '';
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<strong>Uploading...</strong> Please wait...';
+      
+      const formData = new FormData();
+      formData.append('photo', file);
+      
+      try {
+        const response = await fetch(`/api/upload/events/${eventId}/photo`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          resultDiv.className = 'success';
+          resultDiv.innerHTML = `
+            <strong>✅ Upload Successful!</strong>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+            <p><strong>Photo URL:</strong> <a href="${result.photoUrl}" target="_blank">${result.photoUrl}</a></p>
+          `;
+        } else {
+          resultDiv.className = 'error';
+          resultDiv.innerHTML = `
+            <strong>❌ Upload Failed</strong>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultDiv.className = 'error';
+        resultDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
