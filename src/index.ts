@@ -8,6 +8,7 @@ import hotelRouter from './routes/hotel.js'
 import userRouter from './routes/user.js'
 import eventRouter from './routes/event.js'
 import applicationRouter from './routes/application.js'
+import walletTransactionRouter from './routes/walletTransaction.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -75,6 +76,9 @@ app.use('/api/events', eventRouter)
 
 // Application routes
 app.use('/api/applications', applicationRouter)
+
+// Wallet transaction routes
+app.use('/api/wallet-transactions', walletTransactionRouter)
 
 app.get('/test-upload', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'test-upload.html'))

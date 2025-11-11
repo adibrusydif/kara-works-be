@@ -226,6 +226,7 @@
       <button class="tab active" onclick="showTab('users')">👥 Users</button>
       <button class="tab" onclick="showTab('events')">📅 Events</button>
       <button class="tab" onclick="showTab('applications')">📝 Applications</button>
+      <button class="tab" onclick="showTab('transactions')">💰 Transactions</button>
     </div>
     
     <!-- Users Tab -->
@@ -301,6 +302,14 @@
         <div id="applications-by-event-grid" class="grid" style="display: none;"></div>
       </div>
     </div>
+
+    <!-- Wallet Transactions Tab -->
+    <div id="transactions-tab" class="tab-content">
+      <button class="refresh-btn" onclick="loadWalletTransactions()">🔄 Refresh</button>
+      <div id="transactions-error" class="error" style="display: none;"></div>
+      <div id="transactions-loading" class="loading">Loading transactions...</div>
+      <div id="transactions-grid" class="grid" style="display: none;"></div>
+    </div>
   </div>
 
   <script>
@@ -322,6 +331,8 @@
         loadUsers();
       } else if (tabName === 'events') {
         loadEvents();
+      } else if (tabName === 'transactions') {
+        loadWalletTransactions();
       } else if (tabName === 'applications') {
         showApplicationType('all');
         loadApplications();
@@ -686,6 +697,59 @@
     errorEl.textContent = `Error: ${error.message}`
     errorEl.style.display = 'block'
     resultEl.style.display = 'none'
+  }
+}
+
+function renderTransactions(data) {
+  if (!data || data.length === 0) {
+    return '<p style="text-align:center; color:#666;">No transactions found</p>'
+  }
+
+  return data
+    .map(txn => {
+      const formattedDate = new Date(txn.transaction_date).toLocaleString()
+      const user = txn.wallet?.user
+      const hotel = user?.hotel
+
+      return `
+        <div class="card">
+          <div class="card-header">Txn #${txn.transaction_id?.substring(0, 8) || 'N/A'}</div>
+          <div class="card-info"><strong>Amount:</strong> Rp ${(txn.transaction_amount || 0).toLocaleString('id-ID')}</div>
+          <div class="card-info"><strong>Date:</strong> ${formattedDate}</div>
+          <div class="card-info"><strong>Wallet ID:</strong> ${txn.wallet_id || 'N/A'}</div>
+          <div class="card-info"><strong>Event ID:</strong> ${txn.transaction_event_id || 'N/A'}</div>
+          ${user ? `<div class="card-info"><strong>User:</strong> ${user.user_name || user.user_id}</div>` : ''}
+          ${hotel ? `<div class="card-info"><strong>Hotel:</strong> ${hotel.hotel_name || hotel.hotel_id}</div>` : ''}
+        </div>
+      `
+    })
+    .join('')
+}
+
+async function loadWalletTransactions() {
+  const loading = document.getElementById('transactions-loading')
+  const error = document.getElementById('transactions-error')
+  const grid = document.getElementById('transactions-grid')
+
+  loading.style.display = 'block'
+  error.style.display = 'none'
+  grid.style.display = 'none'
+
+  try {
+    const res = await fetch('/api/wallet-transactions')
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to load transactions')
+    }
+
+    grid.innerHTML = renderTransactions(data.data || data) // support both shapes
+    grid.style.display = 'grid'
+  } catch (err) {
+    error.textContent = `Error: ${err.message}`
+    error.style.display = 'block'
+  } finally {
+    loading.style.display = 'none'
   }
 }
 
