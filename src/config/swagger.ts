@@ -1,5 +1,9 @@
 import swaggerJsdoc from 'swagger-jsdoc'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
@@ -146,7 +150,14 @@ const options: swaggerJsdoc.Options = {
       { name: 'Uploads', description: 'File upload endpoints' },
     ],
   },
-  apis: ['./src/routes/*.ts'],
+  apis: [
+    path.join(__dirname, '../routes/*.ts'),
+    path.join(__dirname, '../routes/*.js'),
+    './src/routes/*.ts',
+    './src/routes/*.js',
+    path.resolve(process.cwd(), 'src/routes/*.ts'),
+    path.resolve(process.cwd(), 'src/routes/*.js'),
+  ],
 }
 
 export const swaggerSpec = swaggerJsdoc(options)
