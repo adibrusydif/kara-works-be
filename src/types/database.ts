@@ -103,3 +103,10 @@ export interface Bank {
     created_at?: string
     updated_at?: string
   }
+
+  export interface Fee {
+    id: boolean          // always true because table holds a single row
+    bank_fee: number     // stored as NUMERIC(12,2) in the database
+    platform_fee: number // same as above
+    updated_at?: string  // ISO timestamp if you keep the column
+  }

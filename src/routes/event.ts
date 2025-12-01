@@ -3,6 +3,61 @@ import { supabase } from '../lib/supabase.js'
 
 const router = express.Router()
 
+
+/**
+ * @swagger
+ * /api/events:
+ *   get:
+ *     summary: Get all events
+ *     description: Retrieve a list of all events with optional filters. Includes related creator and hotel data.
+ *     tags: [Events]
+ *     parameters:
+ *       - in: query
+ *         name: creator_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter events by creator ID
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filter events by status (pending, posted, finished)
+ *         example: "posted"
+ *       - in: query
+ *         name: date_from
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter events from this date onwards
+ *         example: "2024-01-01T00:00:00Z"
+ *       - in: query
+ *         name: date_to
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter events up to this date
+ *         example: "2024-12-31T23:59:59Z"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved list of events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // Get all events (with optional filters)
 router.get('/', async (req, res) => {
   try {
@@ -37,6 +92,46 @@ router.get('/', async (req, res) => {
   }
 })
 
+
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   get:
+ *     summary: Get a single event by ID
+ *     description: Retrieve detailed information about a specific event, including related creator and hotel data
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved event details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Event'
+ *       404:
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // Get single event by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -59,6 +154,112 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+/**
+ * @swagger
+ * /api/events:
+ *   post:
+ *     summary: Create a new event
+ *     description: Create a new event. Validates that the creator exists and all required fields are provided.
+ *     tags: [Events]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - event_creator_id
+ *               - event_name
+ *               - event_date
+ *               - event_salary
+ *               - event_person_count
+ *             properties:
+ *               event_creator_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The unique identifier of the user creating the event
+ *                 example: "550e8400-e29b-41d4-a716-446655440000"
+ *               event_name:
+ *                 type: string
+ *                 description: The name of the event
+ *                 example: "Wedding Reception"
+ *               event_photo:
+ *                 type: string
+ *                 format: uri
+ *                 description: URL to event photo
+ *                 example: "https://example.com/events/photo.jpg"
+ *               event_description:
+ *                 type: string
+ *                 description: Description of the event
+ *                 example: "Elegant wedding reception with live music"
+ *               event_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Date and time of the event
+ *                 example: "2024-12-25T18:00:00Z"
+ *               event_salary:
+ *                 type: number
+ *                 format: decimal
+ *                 description: Salary per worker for this event
+ *                 example: 500000
+ *               event_person_count:
+ *                 type: integer
+ *                 description: Number of workers needed
+ *                 example: 10
+ *               event_status:
+ *                 type: string
+ *                 enum: [pending, posted, finished]
+ *                 description: Status of the event (defaults to 'posted' if not provided)
+ *                 example: "posted"
+ *           example:
+ *             event_creator_id: "550e8400-e29b-41d4-a716-446655440000"
+ *             event_name: "Wedding Reception"
+ *             event_date: "2024-12-25T18:00:00Z"
+ *             event_salary: 500000
+ *             event_person_count: 10
+ *             event_status: "posted"
+ *     responses:
+ *       201:
+ *         description: Event created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               missingCreator:
+ *                 value:
+ *                   error: "event_creator_id is required"
+ *               invalidDate:
+ *                 value:
+ *                   error: "event_date must be a valid date"
+ *               invalidSalary:
+ *                 value:
+ *                   error: "event_salary must be a positive number"
+ *       404:
+ *         description: Creator not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "User with id \"550e8400-e29b-41d4-a716-446655440000\" not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 // Add event
 router.post('/', async (req, res) => {
@@ -149,6 +350,90 @@ router.post('/', async (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   put:
+ *     summary: Update an event
+ *     description: Update event details. All fields are optional - only provided fields will be updated.
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event to update
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               event_name:
+ *                 type: string
+ *                 description: The name of the event
+ *                 example: "Updated Event Name"
+ *               event_photo:
+ *                 type: string
+ *                 format: uri
+ *                 description: URL to event photo
+ *               event_description:
+ *                 type: string
+ *                 description: Description of the event
+ *               event_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Date and time of the event
+ *               event_salary:
+ *                 type: number
+ *                 format: decimal
+ *                 description: Salary per worker
+ *               event_person_count:
+ *                 type: integer
+ *                 description: Number of workers needed
+ *               event_status:
+ *                 type: string
+ *                 enum: [pending, posted, finished]
+ *                 description: Status of the event
+ *           example:
+ *             event_name: "Updated Event Name"
+ *             event_status: "posted"
+ *     responses:
+ *       200:
+ *         description: Event updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "No fields to update"
+ *       404:
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 // Update event
 router.put('/:id', async (req, res) => {
   try {
@@ -213,6 +498,33 @@ router.put('/:id', async (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/events/{id}:
+ *   delete:
+ *     summary: Delete an event
+ *     description: Remove an event from the system
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event to delete
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       204:
+ *         description: Event deleted successfully (no content)
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 // Delete event
 router.delete('/:id', async (req, res) => {
   try {
@@ -231,6 +543,42 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+
+/**
+ * @swagger
+ * /api/events/creator/{creatorId}:
+ *   get:
+ *     summary: Get events by creator
+ *     description: Retrieve all events created by a specific user
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: creatorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event creator
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved events for the creator
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // Get events by creator
 router.get('/creator/:creatorId', async (req, res) => {
   try {
@@ -249,6 +597,42 @@ router.get('/creator/:creatorId', async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+/**
+ * @swagger
+ * /api/events/status/{status}:
+ *   get:
+ *     summary: Get events by status
+ *     description: Retrieve all events with a specific status
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: status
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [pending, posted, finished]
+ *         description: The event status to filter by
+ *         example: "posted"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved events with the specified status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 // Get events by status
 router.get('/status/:status', async (req, res) => {
@@ -271,6 +655,50 @@ router.get('/status/:status', async (req, res) => {
 
 import QRCode from 'qrcode'
 import { buildClockQrPayload } from '../utils/clockQr.js'
+
+/**
+ * @swagger
+ * /api/events/{id}/generate-clock-in-qr:
+ *   post:
+ *     summary: Generate clock-in QR code
+ *     description: Generate a temporary QR code for workers to clock in to an event. The QR code contains event_id, creator_id, timestamp, and type.
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: QR code generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QRCodeResponse'
+ *             example:
+ *               payload:
+ *                 event_id: "550e8400-e29b-41d4-a716-446655440000"
+ *                 creator_id: "550e8400-e29b-41d4-a716-446655440001"
+ *                 generated_at: "2024-01-01T12:00:00Z"
+ *                 type: "clock_in"
+ *               qr: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+ *       404:
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 // Generates a temporary clock-in QR for an event
 router.post('/:id/generate-clock-in-qr', async (req, res) => {
@@ -304,6 +732,50 @@ router.post('/:id/generate-clock-in-qr', async (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/events/{id}/generate-clock-out-qr:
+ *   post:
+ *     summary: Generate clock-out QR code
+ *     description: Generate a temporary QR code for workers to clock out from an event. The QR code contains event_id, creator_id, timestamp, and type.
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: QR code generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/QRCodeResponse'
+ *             example:
+ *               payload:
+ *                 event_id: "550e8400-e29b-41d4-a716-446655440000"
+ *                 creator_id: "550e8400-e29b-41d4-a716-446655440001"
+ *                 generated_at: "2024-01-01T20:00:00Z"
+ *                 type: "clock_out"
+ *               qr: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+ *       404:
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
 // Generates a temporary clock-out QR for an event
 router.post('/:id/generate-clock-out-qr', async (req, res) => {
   try {
@@ -335,6 +807,76 @@ router.post('/:id/generate-clock-out-qr', async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+/**
+ * @swagger
+ * /api/events/{id}/finish:
+ *   post:
+ *     summary: Finish an event
+ *     description: Mark an event as finished and credit all workers who clocked out. This will update wallet balances and create wallet transactions for each worker.
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the event to finish
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: Event finished successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Event finished and workers credited successfully"
+ *                 processedCount:
+ *                   type: integer
+ *                   description: Number of workers who were credited
+ *                   example: 5
+ *                 processed:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       application_id:
+ *                         type: string
+ *                         format: uuid
+ *                       user_id:
+ *                         type: string
+ *                         format: uuid
+ *             example:
+ *               message: "Event finished and workers credited successfully"
+ *               processedCount: 5
+ *               processed:
+ *                 - application_id: "550e8400-e29b-41d4-a716-446655440002"
+ *                   user_id: "550e8400-e29b-41d4-a716-446655440003"
+ *       400:
+ *         description: Event already finished
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               error: "Event already finished"
+ *       404:
+ *         description: Event not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 router.post('/:id/finish', async (req, res) => {
     try {

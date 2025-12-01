@@ -9,12 +9,28 @@ import userRouter from './routes/user.js'
 import eventRouter from './routes/event.js'
 import applicationRouter from './routes/application.js'
 import walletTransactionRouter from './routes/walletTransaction.js'
+import feeRouter from './routes/fee.js'
+
+import { apiReference } from '@scalar/express-api-reference'
+import { swaggerSpec } from './config/swagger.js'
+
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
 
 app.use(express.json())
+
+// Scalar API Documentation
+app.use(
+  '/api-docs',
+  apiReference({
+    theme: 'purple',
+    layout: 'modern',
+    content: swaggerSpec as any,
+  })
+)
 
 
 // Home route - HTML
@@ -79,6 +95,9 @@ app.use('/api/applications', applicationRouter)
 
 // Wallet transaction routes
 app.use('/api/wallet-transactions', walletTransactionRouter)
+
+// Fee routes
+app.use('/api/fee', feeRouter)
 
 app.get('/test-upload', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'test-upload.html'))
