@@ -26,6 +26,14 @@ const options: swaggerJsdoc.Options = {
       },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your access token (without "Bearer " prefix)',
+        },
+      },
       schemas: {
         Bank: {
           type: 'object',
@@ -148,6 +156,7 @@ const options: swaggerJsdoc.Options = {
       { name: 'Wallet Transactions', description: 'Wallet transaction endpoints' },
       { name: 'Fee', description: 'Fee configuration endpoints' },
       { name: 'Uploads', description: 'File upload endpoints' },
+      { name: 'Authentication', description: 'Authentication endpoints' },
     ],
   },
   apis: [

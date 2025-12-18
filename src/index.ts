@@ -10,6 +10,8 @@ import eventRouter from './routes/event.js'
 import applicationRouter from './routes/application.js'
 import walletTransactionRouter from './routes/walletTransaction.js'
 import feeRouter from './routes/fee.js'
+import authRouter from './routes/auth.js'
+import { requireAuth } from './middleware/auth.js' // Add this
 
 import { apiReference } from '@scalar/express-api-reference'
 import { swaggerSpec } from './config/swagger.js'
@@ -21,6 +23,11 @@ const __dirname = path.dirname(__filename)
 const app = express()
 
 app.use(express.json())
+
+app.use(requireAuth) // Add this single line
+
+// Auth routes
+app.use('/api/auth', authRouter)
 
 // Scalar API Documentation
 app.use(

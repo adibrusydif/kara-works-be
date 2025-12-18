@@ -18,6 +18,123 @@
       max-width: 1200px;
       margin: 0 auto;
     }
+    
+    /* Login Styles */
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .login-form input {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .login-form button {
+      padding: 12px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .login-form button:hover {
+      background: #0056b3;
+    }
+    .login-form button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .login-error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: none;
+    }
+    .login-success {
+      background: #d1e7dd;
+      color: #0f5132;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: none;
+    }
+    .otp-step {
+      display: none;
+    }
+    .otp-step.active {
+      display: block;
+    }
+    .user-info {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .user-info-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-info-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #007bff;
+    }
+    .user-avatar-placeholder-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 12px;
+      border: 2px solid #007bff;
+    }
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .logout-btn:hover {
+      background: #c82333;
+    }
+    
     h1 {
       color: #333;
       margin-bottom: 30px;
@@ -216,105 +333,369 @@
       border-radius: 4px;
       font-size: 14px;
     }
+    .dashboard-content {
+      display: none;
+    }
+    .dashboard-content.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📊 Users & Events Dashboard</h1>
+  <!-- Login Container -->
+  <div id="login-container" class="login-container">
+    <h2>🔐 Login to Dashboard</h2>
     
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('users')">👥 Users</button>
-      <button class="tab" onclick="showTab('events')">📅 Events</button>
-      <button class="tab" onclick="showTab('applications')">📝 Applications</button>
-      <button class="tab" onclick="showTab('transactions')">💰 Transactions</button>
+    <!-- Step 1: Request OTP -->
+    <div id="request-otp-step" class="login-form">
+      <div class="login-error" id="login-error"></div>
+      <div class="login-success" id="login-success"></div>
+      
+      <input 
+        type="tel" 
+        id="phone-input" 
+        placeholder="Phone Number (e.g., +6281234567890)" 
+        required
+      />
+      <button onclick="requestOTP()" id="request-otp-btn">Request OTP</button>
     </div>
     
-    <!-- Users Tab -->
-    <div id="users-tab" class="tab-content active">
-      <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
-      <div id="users-error" class="error" style="display: none;"></div>
-      <div id="users-loading" class="loading">Loading users...</div>
-      <div id="users-grid" class="grid" style="display: none;"></div>
-    </div>
-    
-    <!-- Events Tab -->
-    <div id="events-tab" class="tab-content">
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="card-header">Generate Clock-In / Clock-Out QR</div>
-            <div class="card-info">
-              <label for="qr-event-id">Event ID</label>
-              <input id="qr-event-id" type="text" placeholder="Enter event UUID">
-            </div>
-            <div class="card-info">
-              <button class="refresh-btn" onclick="generateQr('clock-in')">Generate Clock-In QR</button>
-              <button class="refresh-btn" onclick="generateQr('clock-out')" style="margin-left: 10px;">Generate Clock-Out QR</button>
-            </div>
-            <div id="qr-error" class="error" style="display: none; margin-top: 10px;"></div>
-            <div id="qr-result" style="display: none; margin-top: 20px; text-align: center;">
-              <p id="qr-type" style="font-weight: bold;"></p>
-              <img id="qr-image" src="" alt="QR Code" style="max-width: 240px; border: 1px solid #ddd; padding: 8px; border-radius: 8px;">
-              <pre id="qr-payload" style="text-align: left; margin-top: 12px; background: #f8f9fa; padding: 12px; border-radius: 6px;"></pre>
-            </div>
-          </div>
-      <button class="refresh-btn" onclick="loadEvents()">🔄 Refresh</button>
-      <div id="events-error" class="error" style="display: none;"></div>
-      <div id="events-loading" class="loading">Loading events...</div>
-      <div id="events-grid" class="grid" style="display: none;"></div>
-    </div>
-    
-    <!-- Applications Tab -->
-    <div id="applications-tab" class="tab-content">
-      <div class="sub-tabs">
-        <button class="sub-tab active" onclick="showApplicationType('all')">All Applications</button>
-        <button class="sub-tab" onclick="showApplicationType('by-user')">By User</button>
-        <button class="sub-tab" onclick="showApplicationType('by-event')">By Event</button>
+    <!-- Step 2: Verify OTP -->
+    <div id="verify-otp-step" class="login-form otp-step">
+      <div class="login-error" id="otp-error"></div>
+      
+      <div>
+        <label>OTP Code (4 digits)</label>
+        <input 
+          type="text" 
+          id="otp-input" 
+          placeholder="0000" 
+          maxlength="4"
+          pattern="[0-9]{4}"
+          required
+        />
+        <small style="color: #666; display: block; margin-top: 5px;">
+          In development mode, use: <strong>0000</strong>
+        </small>
       </div>
       
-      <!-- All Applications -->
-      <div id="applications-all" class="application-view">
-        <button class="refresh-btn" onclick="loadApplications()">🔄 Refresh</button>
-        <div id="applications-error" class="error" style="display: none;"></div>
-        <div id="applications-loading" class="loading">Loading applications...</div>
-        <div id="applications-grid" class="grid" style="display: none;"></div>
-      </div>
-      
-      <!-- Applications By User -->
-      <div id="applications-by-user" class="application-view" style="display: none;">
-        <div class="input-group">
-          <label for="user-id-input">User ID:</label>
-          <input type="text" id="user-id-input" placeholder="Enter user ID">
-        </div>
-        <button class="refresh-btn" onclick="loadApplicationsByUser()">🔄 Load Applications</button>
-        <div id="applications-by-user-error" class="error" style="display: none;"></div>
-        <div id="applications-by-user-loading" class="loading" style="display: none;">Loading applications...</div>
-        <div id="applications-by-user-grid" class="grid" style="display: none;"></div>
-      </div>
-      
-      <!-- Applications By Event -->
-      <div id="applications-by-event" class="application-view" style="display: none;">
-        <div class="input-group">
-          <label for="event-id-input">Event ID:</label>
-          <input type="text" id="event-id-input" placeholder="Enter event ID">
-        </div>
-        <button class="refresh-btn" onclick="loadApplicationsByEvent()">🔄 Load Applications</button>
-        <div id="applications-by-event-error" class="error" style="display: none;"></div>
-        <div id="applications-by-event-loading" class="loading" style="display: none;">Loading applications...</div>
-        <div id="applications-by-event-grid" class="grid" style="display: none;"></div>
-      </div>
+      <button onclick="verifyOTP()" id="verify-otp-btn">Verify & Login</button>
+      <button onclick="backToPhone()" style="background: #6c757d;">Back</button>
     </div>
+  </div>
 
-    <!-- Wallet Transactions Tab -->
-    <div id="transactions-tab" class="tab-content">
-      <button class="refresh-btn" onclick="loadWalletTransactions()">🔄 Refresh</button>
-      <div id="transactions-error" class="error" style="display: none;"></div>
-      <div id="transactions-loading" class="loading">Loading transactions...</div>
-      <div id="transactions-grid" class="grid" style="display: none;"></div>
+  <!-- Dashboard Content -->
+  <div id="dashboard-content" class="dashboard-content">
+    <div class="container">
+      <!-- User Info Bar -->
+      <div class="user-info">
+        <div class="user-info-left">
+          <div id="user-avatar-container">
+            <div class="user-avatar-placeholder-small">👤</div>
+          </div>
+          <div>
+            <div style="font-weight: bold; color: #333;" id="user-name">Loading...</div>
+            <div style="font-size: 12px; color: #666;" id="user-phone">Loading...</div>
+          </div>
+        </div>
+        <div class="user-info-right">
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+      <h1>📊 Users & Events Dashboard</h1>
+      
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('users')">👥 Users</button>
+        <button class="tab" onclick="showTab('events')">📅 Events</button>
+        <button class="tab" onclick="showTab('applications')">📝 Applications</button>
+        <button class="tab" onclick="showTab('transactions')">💰 Transactions</button>
+      </div>
+      
+      <!-- Users Tab -->
+      <div id="users-tab" class="tab-content active">
+        <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
+        <div id="users-error" class="error" style="display: none;"></div>
+        <div id="users-loading" class="loading">Loading users...</div>
+        <div id="users-grid" class="grid" style="display: none;"></div>
+      </div>
+      
+      <!-- Events Tab -->
+      <div id="events-tab" class="tab-content">
+          <div class="card" style="margin-bottom: 20px;">
+              <div class="card-header">Generate Clock-In / Clock-Out QR</div>
+              <div class="card-info">
+                <label for="qr-event-id">Event ID</label>
+                <input id="qr-event-id" type="text" placeholder="Enter event UUID">
+              </div>
+              <div class="card-info">
+                <button class="refresh-btn" onclick="generateQr('clock-in')">Generate Clock-In QR</button>
+                <button class="refresh-btn" onclick="generateQr('clock-out')" style="margin-left: 10px;">Generate Clock-Out QR</button>
+              </div>
+              <div id="qr-error" class="error" style="display: none; margin-top: 10px;"></div>
+              <div id="qr-result" style="display: none; margin-top: 20px; text-align: center;">
+                <p id="qr-type" style="font-weight: bold;"></p>
+                <img id="qr-image" src="" alt="QR Code" style="max-width: 240px; border: 1px solid #ddd; padding: 8px; border-radius: 8px;">
+                <pre id="qr-payload" style="text-align: left; margin-top: 12px; background: #f8f9fa; padding: 12px; border-radius: 6px;"></pre>
+              </div>
+            </div>
+        <button class="refresh-btn" onclick="loadEvents()">🔄 Refresh</button>
+        <div id="events-error" class="error" style="display: none;"></div>
+        <div id="events-loading" class="loading">Loading events...</div>
+        <div id="events-grid" class="grid" style="display: none;"></div>
+      </div>
+      
+      <!-- Applications Tab -->
+      <div id="applications-tab" class="tab-content">
+        <div class="sub-tabs">
+          <button class="sub-tab active" onclick="showApplicationType('all')">All Applications</button>
+          <button class="sub-tab" onclick="showApplicationType('by-user')">By User</button>
+          <button class="sub-tab" onclick="showApplicationType('by-event')">By Event</button>
+        </div>
+        
+        <!-- All Applications -->
+        <div id="applications-all" class="application-view">
+          <button class="refresh-btn" onclick="loadApplications()">🔄 Refresh</button>
+          <div id="applications-error" class="error" style="display: none;"></div>
+          <div id="applications-loading" class="loading">Loading applications...</div>
+          <div id="applications-grid" class="grid" style="display: none;"></div>
+        </div>
+        
+        <!-- Applications By User -->
+        <div id="applications-by-user" class="application-view" style="display: none;">
+          <div class="input-group">
+            <label for="user-id-input">User ID:</label>
+            <input type="text" id="user-id-input" placeholder="Enter user ID">
+          </div>
+          <button class="refresh-btn" onclick="loadApplicationsByUser()">🔄 Load Applications</button>
+          <div id="applications-by-user-error" class="error" style="display: none;"></div>
+          <div id="applications-by-user-loading" class="loading" style="display: none;">Loading applications...</div>
+          <div id="applications-by-user-grid" class="grid" style="display: none;"></div>
+        </div>
+        
+        <!-- Applications By Event -->
+        <div id="applications-by-event" class="application-view" style="display: none;">
+          <div class="input-group">
+            <label for="event-id-input">Event ID:</label>
+            <input type="text" id="event-id-input" placeholder="Enter event ID">
+          </div>
+          <button class="refresh-btn" onclick="loadApplicationsByEvent()">🔄 Load Applications</button>
+          <div id="applications-by-event-error" class="error" style="display: none;"></div>
+          <div id="applications-by-event-loading" class="loading" style="display: none;">Loading applications...</div>
+          <div id="applications-by-event-grid" class="grid" style="display: none;"></div>
+        </div>
+      </div>
+
+      <!-- Wallet Transactions Tab -->
+      <div id="transactions-tab" class="tab-content">
+        <button class="refresh-btn" onclick="loadWalletTransactions()">🔄 Refresh</button>
+        <div id="transactions-error" class="error" style="display: none;"></div>
+        <div id="transactions-loading" class="loading">Loading transactions...</div>
+        <div id="transactions-grid" class="grid" style="display: none;"></div>
+      </div>
     </div>
   </div>
 
   <script>
+    const API_BASE = '/api';
+    let currentPhone = '';
+
+    // Check if user is already logged in
+    function checkAuth() {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        loadUserInfo();
+        showDashboard();
+      } else {
+        showLogin();
+      }
+    }
+
+    // Show login screen
+    function showLogin() {
+      document.getElementById('login-container').style.display = 'block';
+      document.getElementById('dashboard-content').classList.remove('active');
+      document.getElementById('request-otp-step').style.display = 'flex';
+      document.getElementById('verify-otp-step').classList.remove('active');
+    }
+
+    // Show dashboard
+    function showDashboard() {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('dashboard-content').classList.add('active');
+    }
+
+    // Request OTP
+    async function requestOTP() {
+      const phone = document.getElementById('phone-input').value.trim();
+      const errorEl = document.getElementById('login-error');
+      const successEl = document.getElementById('login-success');
+      const btn = document.getElementById('request-otp-btn');
+
+      if (!phone) {
+        errorEl.textContent = 'Please enter your phone number';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/request-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone_number: phone })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to request OTP');
+        }
+
+        currentPhone = phone;
+        successEl.textContent = data.message || 'OTP sent! Check your WhatsApp.';
+        if (data.otp_code) {
+          successEl.textContent += ` (Dev mode: ${data.otp_code})`;
+        }
+        successEl.style.display = 'block';
+
+        // Show OTP input step
+        document.getElementById('request-otp-step').style.display = 'none';
+        document.getElementById('verify-otp-step').classList.add('active');
+      } catch (error) {
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Request OTP';
+      }
+    }
+
+    // Verify OTP
+    async function verifyOTP() {
+      const otp = document.getElementById('otp-input').value.trim();
+      const errorEl = document.getElementById('otp-error');
+      const btn = document.getElementById('verify-otp-btn');
+
+      if (!otp || otp.length !== 4) {
+        errorEl.textContent = 'Please enter a valid 4-digit OTP';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+      errorEl.style.display = 'none';
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone_number: currentPhone,
+            otp_code: otp
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Invalid OTP');
+        }
+
+        // Store token
+        localStorage.setItem('access_token', data.access_token);
+        if (data.user) {
+          localStorage.setItem('user_info', JSON.stringify(data.user));
+        }
+
+        // Load user info and show dashboard
+        loadUserInfo();
+        showDashboard();
+      } catch (error) {
+        errorEl.textContent = `Error: ${error.message}`;
+        errorEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Verify & Login';
+      }
+    }
+
+    // Back to phone input
+    function backToPhone() {
+      document.getElementById('request-otp-step').style.display = 'flex';
+      document.getElementById('verify-otp-step').classList.remove('active');
+      document.getElementById('otp-input').value = '';
+      document.getElementById('login-error').style.display = 'none';
+      document.getElementById('login-success').style.display = 'none';
+    }
+
+    // Load user info
+    async function loadUserInfo() {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const user = data.user;
+          
+          document.getElementById('user-name').textContent = user.user_name || 'User';
+          document.getElementById('user-phone').textContent = user.user_phone || '';
+          
+          const avatarContainer = document.getElementById('user-avatar-container');
+          if (user.user_photo) {
+            avatarContainer.innerHTML = `<img src="${user.user_photo}" class="user-avatar-small" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'user-avatar-placeholder-small\\'>👤</div>'">`;
+          } else {
+            avatarContainer.innerHTML = '<div class="user-avatar-placeholder-small">👤</div>';
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load user info:', error);
+      }
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_info');
+      showLogin();
+      // Reset form
+      document.getElementById('phone-input').value = '';
+      document.getElementById('otp-input').value = '';
+      currentPhone = '';
+    }
+
+    // Get auth headers for API calls
+    function getAuthHeaders() {
+      const token = localStorage.getItem('access_token');
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
+    // Handle auth errors
+    function handleAuthError(response) {
+      if (response.status === 401 || response.status === 403) {
+        logout();
+        alert('Session expired. Please login again.');
+        return true;
+      }
+      return false;
+    }
+
     function showTab(tabName) {
-      // Hide all tabs
       document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
       });
@@ -322,11 +703,9 @@
         tab.classList.remove('active');
       });
       
-      // Show selected tab
       document.getElementById(tabName + '-tab').classList.add('active');
       event.target.classList.add('active');
       
-      // Load data for the selected tab
       if (tabName === 'users') {
         loadUsers();
       } else if (tabName === 'events') {
@@ -340,7 +719,6 @@
     }
 
     function showApplicationType(type) {
-      // Hide all application views
       document.querySelectorAll('.application-view').forEach(view => {
         view.style.display = 'none';
       });
@@ -348,11 +726,9 @@
         tab.classList.remove('active');
       });
       
-      // Show selected view
       document.getElementById('applications-' + type).style.display = 'block';
       event.target.classList.add('active');
       
-      // Load data
       if (type === 'all') {
         loadApplications();
       }
@@ -368,7 +744,12 @@
       gridEl.style.display = 'none';
       
       try {
-        const response = await fetch('/api/users');
+        const response = await fetch(`${API_BASE}/users`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (handleAuthError(response)) return;
+        
         const result = await response.json();
         
         if (!response.ok) {
@@ -418,7 +799,12 @@
       gridEl.style.display = 'none';
       
       try {
-        const response = await fetch('/api/events');
+        const response = await fetch(`${API_BASE}/events`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (handleAuthError(response)) return;
+        
         const result = await response.json();
         
         if (!response.ok) {
@@ -481,7 +867,12 @@
       gridEl.style.display = 'none';
       
       try {
-        const response = await fetch('/api/applications');
+        const response = await fetch(`${API_BASE}/applications`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (handleAuthError(response)) return;
+        
         const result = await response.json();
         
         if (!response.ok) {
@@ -544,7 +935,12 @@
       gridEl.style.display = 'none';
       
       try {
-        const response = await fetch(`/api/applications/user/${userId}`);
+        const response = await fetch(`${API_BASE}/applications/user/${userId}`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (handleAuthError(response)) return;
+        
         const result = await response.json();
         
         if (!response.ok) {
@@ -607,7 +1003,12 @@
       gridEl.style.display = 'none';
       
       try {
-        const response = await fetch(`/api/applications/event/${eventId}`);
+        const response = await fetch(`${API_BASE}/applications/event/${eventId}`, {
+          headers: getAuthHeaders()
+        });
+        
+        if (handleAuthError(response)) return;
+        
         const result = await response.json();
         
         if (!response.ok) {
@@ -658,103 +1059,114 @@
     }
 
     async function generateQr(type) {
-  const eventId = document.getElementById('qr-event-id').value.trim()
-  const errorEl = document.getElementById('qr-error')
-  const resultEl = document.getElementById('qr-result')
-  const imageEl = document.getElementById('qr-image')
-  const payloadEl = document.getElementById('qr-payload')
-  const typeLabel = document.getElementById('qr-type')
+      const eventId = document.getElementById('qr-event-id').value.trim()
+      const errorEl = document.getElementById('qr-error')
+      const resultEl = document.getElementById('qr-result')
+      const imageEl = document.getElementById('qr-image')
+      const payloadEl = document.getElementById('qr-payload')
+      const typeLabel = document.getElementById('qr-type')
 
-  if (!eventId) {
-    errorEl.textContent = 'Please enter an event ID'
-    errorEl.style.display = 'block'
-    resultEl.style.display = 'none'
-    return
-  }
+      if (!eventId) {
+        errorEl.textContent = 'Please enter an event ID'
+        errorEl.style.display = 'block'
+        resultEl.style.display = 'none'
+        return
+      }
 
-  try {
-    errorEl.style.display = 'none'
-    resultEl.style.display = 'none'
+      try {
+        errorEl.style.display = 'none'
+        resultEl.style.display = 'none'
 
-    const endpoint =
-      type === 'clock-in'
-        ? `/api/events/${eventId}/generate-clock-in-qr`
-        : `/api/events/${eventId}/generate-clock-out-qr`
+        const endpoint =
+          type === 'clock-in'
+            ? `${API_BASE}/events/${eventId}/generate-clock-in-qr`
+            : `${API_BASE}/events/${eventId}/generate-clock-out-qr`
 
-    const response = await fetch(endpoint, { method: 'POST' })
-    const data = await response.json()
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: getAuthHeaders()
+        })
+        
+        if (handleAuthError(response)) return;
+        
+        const data = await response.json()
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to generate QR code')
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to generate QR code')
+        }
+
+        typeLabel.textContent = type === 'clock-in' ? 'Clock-In QR' : 'Clock-Out QR'
+        imageEl.src = data.qr
+        payloadEl.textContent = JSON.stringify(data.payload, null, 2)
+
+        resultEl.style.display = 'block'
+      } catch (error) {
+        errorEl.textContent = `Error: ${error.message}`
+        errorEl.style.display = 'block'
+        resultEl.style.display = 'none'
+      }
     }
 
-    typeLabel.textContent = type === 'clock-in' ? 'Clock-In QR' : 'Clock-Out QR'
-    imageEl.src = data.qr
-    payloadEl.textContent = JSON.stringify(data.payload, null, 2)
+    function renderTransactions(data) {
+      if (!data || data.length === 0) {
+        return '<p style="text-align:center; color:#666;">No transactions found</p>'
+      }
 
-    resultEl.style.display = 'block'
-  } catch (error) {
-    errorEl.textContent = `Error: ${error.message}`
-    errorEl.style.display = 'block'
-    resultEl.style.display = 'none'
-  }
-}
+      return data
+        .map(txn => {
+          const formattedDate = new Date(txn.transaction_date).toLocaleString()
+          const user = txn.wallet?.user
+          const hotel = user?.hotel
 
-function renderTransactions(data) {
-  if (!data || data.length === 0) {
-    return '<p style="text-align:center; color:#666;">No transactions found</p>'
-  }
-
-  return data
-    .map(txn => {
-      const formattedDate = new Date(txn.transaction_date).toLocaleString()
-      const user = txn.wallet?.user
-      const hotel = user?.hotel
-
-      return `
-        <div class="card">
-          <div class="card-header">Txn #${txn.transaction_id?.substring(0, 8) || 'N/A'}</div>
-          <div class="card-info"><strong>Amount:</strong> Rp ${(txn.transaction_amount || 0).toLocaleString('id-ID')}</div>
-          <div class="card-info"><strong>Date:</strong> ${formattedDate}</div>
-          <div class="card-info"><strong>Wallet ID:</strong> ${txn.wallet_id || 'N/A'}</div>
-          <div class="card-info"><strong>Event ID:</strong> ${txn.transaction_event_id || 'N/A'}</div>
-          ${user ? `<div class="card-info"><strong>User:</strong> ${user.user_name || user.user_id}</div>` : ''}
-          ${hotel ? `<div class="card-info"><strong>Hotel:</strong> ${hotel.hotel_name || hotel.hotel_id}</div>` : ''}
-        </div>
-      `
-    })
-    .join('')
-}
-
-async function loadWalletTransactions() {
-  const loading = document.getElementById('transactions-loading')
-  const error = document.getElementById('transactions-error')
-  const grid = document.getElementById('transactions-grid')
-
-  loading.style.display = 'block'
-  error.style.display = 'none'
-  grid.style.display = 'none'
-
-  try {
-    const res = await fetch('/api/wallet-transactions')
-    const data = await res.json()
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to load transactions')
+          return `
+            <div class="card">
+              <div class="card-header">Txn #${txn.transaction_id?.substring(0, 8) || 'N/A'}</div>
+              <div class="card-info"><strong>Amount:</strong> Rp ${(txn.transaction_amount || 0).toLocaleString('id-ID')}</div>
+              <div class="card-info"><strong>Date:</strong> ${formattedDate}</div>
+              <div class="card-info"><strong>Wallet ID:</strong> ${txn.wallet_id || 'N/A'}</div>
+              <div class="card-info"><strong>Event ID:</strong> ${txn.transaction_event_id || 'N/A'}</div>
+              ${user ? `<div class="card-info"><strong>User:</strong> ${user.user_name || user.user_id}</div>` : ''}
+              ${hotel ? `<div class="card-info"><strong>Hotel:</strong> ${hotel.hotel_name || hotel.hotel_id}</div>` : ''}
+            </div>
+          `
+        })
+        .join('')
     }
 
-    grid.innerHTML = renderTransactions(data.data || data) // support both shapes
-    grid.style.display = 'grid'
-  } catch (err) {
-    error.textContent = `Error: ${err.message}`
-    error.style.display = 'block'
-  } finally {
-    loading.style.display = 'none'
-  }
-}
+    async function loadWalletTransactions() {
+      const loading = document.getElementById('transactions-loading')
+      const error = document.getElementById('transactions-error')
+      const grid = document.getElementById('transactions-grid')
 
-    // Load users on page load
-    loadUsers();
+      loading.style.display = 'block'
+      error.style.display = 'none'
+      grid.style.display = 'none'
+
+      try {
+        const res = await fetch(`${API_BASE}/wallet-transactions`, {
+          headers: getAuthHeaders()
+        })
+        
+        if (handleAuthError(res)) return;
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to load transactions')
+        }
+
+        grid.innerHTML = renderTransactions(data.data || data)
+        grid.style.display = 'grid'
+      } catch (err) {
+        error.textContent = `Error: ${err.message}`
+        error.style.display = 'block'
+      } finally {
+        loading.style.display = 'none'
+      }
+    }
+
+    // Initialize on page load
+    checkAuth();
   </script>
 </body>
 </html>
